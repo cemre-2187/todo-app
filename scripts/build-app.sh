@@ -15,6 +15,16 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$(swift build -c release --show-bin-path)/MacTodo" "$APP/Contents/MacOS/MacTodo"
 
+# İkon: PNG çiz, tüm boyutlara ölçekle, .icns'e çevir.
+ICONSET=build/AppIcon.iconset
+rm -rf "$ICONSET" && mkdir -p "$ICONSET"
+swift scripts/make-icon.swift build/AppIcon.png >/dev/null
+for px in 16 32 128 256 512; do
+  sips -z $px $px build/AppIcon.png --out "$ICONSET/icon_${px}x${px}.png" >/dev/null
+  sips -z $((px * 2)) $((px * 2)) build/AppIcon.png --out "$ICONSET/icon_${px}x${px}@2x.png" >/dev/null
+done
+iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -24,6 +34,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>To Do</string>
   <key>CFBundleIdentifier</key><string>com.cemre.mactodo</string>
   <key>CFBundleExecutable</key><string>MacTodo</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.0</string>
   <key>CFBundleVersion</key><string>1</string>

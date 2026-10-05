@@ -34,6 +34,8 @@ veya `Package.swift` dosyasını Xcode ile açıp ▶︎ Run.
 cp -R build/MacTodo.app /Applications/
 ```
 
+İkon `scripts/make-icon.swift` ile kodla çizilir; paketleme sırasında otomatik olarak `.icns`'e çevrilip uygulamaya eklenir.
+
 ## Kısayollar
 
 - `⇧⌘L` — Yeni liste
