@@ -6,6 +6,7 @@ struct TaskListView: View {
     let selection: ListSelection
 
     @State private var selectedTaskID: UUID?
+    @State private var draggedTaskID: UUID?
     @State private var newTitle = ""
     @State private var showCompleted = true
     @State private var showBackgroundPicker = false
@@ -14,10 +15,7 @@ struct TaskListView: View {
     @FocusState private var titleFocused: Bool
     @FocusState private var addFocused: Bool
 
-    /// Günüm seçiliyken aktif sekmeye göre Günüm ya da Nice to have.
-    private var current: ListSelection {
-        selection == .myDay && myDayTab == .niceToHave ? .niceToHave : selection
-    }
+    private var current: ListSelection { selection.resolved(myDayTab) }
 
     var body: some View {
         let tasks = store.tasks(for: current)
@@ -49,7 +47,7 @@ struct TaskListView: View {
             addBar
         }
         .background {
-            BackgroundView(background: store.background(for: current))
+            WindowSpanningBackground(background: store.background(for: current))
                 .ignoresSafeArea()
                 .overlay {
                     if isDropTargeted {
@@ -88,7 +86,10 @@ struct TaskListView: View {
                     .inspectorColumnWidth(min: 280, ideal: 320, max: 440)
             }
         }
-        .onChange(of: myDayTab) { selectedTaskID = nil }
+        .onChange(of: myDayTab) {
+            selectedTaskID = nil
+            draggedTaskID = nil
+        }
         .onAppear {
             if case .list(let id) = selection, store.pendingRenameListID == id {
                 store.pendingRenameListID = nil
@@ -217,6 +218,8 @@ struct TaskListView: View {
                 store.deleteTask(task.id)
             }
         }
+        // Planlanan son tarihe göre sıralı olduğu için elle sıralanamaz.
+        .modifier(Reorderable(task: task, draggedID: $draggedTaskID, isEnabled: current != .planned))
     }
 
     private func completedHeader(count: Int) -> some View {
@@ -279,6 +282,51 @@ struct TaskListView: View {
         .padding(.horizontal, 28)
         .padding(.top, 8)
         .padding(.bottom, 24)
+    }
+}
+
+/// Satırı sürükle bırak ile sıralanabilir yapar; sürüklenen görev üzerine gelinen
+/// görevin yerine anında taşınır.
+private struct Reorderable: ViewModifier {
+    @Environment(Store.self) private var store
+    let task: TodoItem
+    @Binding var draggedID: UUID?
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content
+                .onDrag {
+                    draggedID = task.id
+                    return NSItemProvider(object: task.id.uuidString as NSString)
+                }
+                .onDrop(of: [.text], delegate: TaskDropDelegate(store: store, target: task, draggedID: $draggedID))
+        } else {
+            content
+        }
+    }
+}
+
+private struct TaskDropDelegate: DropDelegate {
+    let store: Store
+    let target: TodoItem
+    @Binding var draggedID: UUID?
+
+    func dropEntered(info: DropInfo) {
+        // Açık ve tamamlanan görevler kendi bölümlerinde sıralanır.
+        guard let draggedID, draggedID != target.id,
+              store.task(draggedID)?.isCompleted == target.isCompleted
+        else { return }
+        withAnimation(.snappy) { store.moveTask(draggedID, to: target.id) }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedID = nil
+        return true
     }
 }
 

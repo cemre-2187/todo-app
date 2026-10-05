@@ -33,6 +33,32 @@ struct BackgroundView: View {
     }
 }
 
+extension EnvironmentValues {
+    /// Pencerenin global koordinatlardaki alanı; `WindowSpanningBackground` kullanır.
+    @Entry var windowFrame: CGRect = .zero
+}
+
+/// Arka planı tüm pencere boyutunda çizip yalnızca bu görünümün kapladığı kısmını
+/// gösterir; böylece menü ve liste aynı resmi kesintisiz paylaşır.
+struct WindowSpanningBackground: View {
+    @Environment(\.windowFrame) private var window
+    let background: Background
+
+    var body: some View {
+        if window.isEmpty {
+            BackgroundView(background: background)
+        } else {
+            GeometryReader { proxy in
+                let frame = proxy.frame(in: .global)
+                BackgroundView(background: background)
+                    .frame(width: window.width, height: window.height)
+                    .offset(x: window.minX - frame.minX, y: window.minY - frame.minY)
+            }
+            .clipped()
+        }
+    }
+}
+
 struct BackgroundPicker: View {
     @Environment(Store.self) private var store
     let selection: ListSelection

@@ -5,6 +5,7 @@ struct SidebarView: View {
     @Binding var selection: ListSelection?
     @State private var listToDelete: TodoList?
     @State private var showColorPicker = false
+    @AppStorage("myDayTab") private var myDayTab: MyDayTab = .today
 
     private let smartLists: [ListSelection] = [.myDay, .important, .planned, .list(Store.inboxID)]
 
@@ -27,13 +28,9 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .scrollContentBackground(customColor == nil ? .automatic : .hidden)
+        .scrollContentBackground(.hidden)
         .safeAreaInset(edge: .bottom) { bottomBar }
-        .background {
-            if let customColor {
-                customColor.ignoresSafeArea()
-            }
-        }
+        .background { background(customColor) }
         // Koyu bir renk seçildiyse yazılar okunaklı kalsın.
         .environment(\.colorScheme, customColor.map { $0.isDark ? .dark : .light } ?? colorScheme)
         .alert(
@@ -50,6 +47,22 @@ struct SidebarView: View {
     }
 
     @Environment(\.colorScheme) private var colorScheme
+
+    /// Seçili listenin arka planı menüye doğru uzar; üstüne seçilen menü rengi
+    /// yarı saydam, renk yoksa buzlu cam katmanı gelir.
+    private func background(_ customColor: Color?) -> some View {
+        let current = (selection ?? .myDay).resolved(myDayTab)
+        return WindowSpanningBackground(background: store.background(for: current))
+            .blur(radius: 24, opaque: true)
+            .overlay {
+                if let customColor {
+                    customColor.opacity(0.6)
+                } else {
+                    Rectangle().fill(.thinMaterial)
+                }
+            }
+            .ignoresSafeArea()
+    }
 
     private var bottomBar: some View {
         HStack {

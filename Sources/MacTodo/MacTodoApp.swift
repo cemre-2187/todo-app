@@ -15,6 +15,7 @@ struct MacTodoApp: App {
         }
         .windowToolbarStyle(.unified)
         .commands {
+            TextFormattingCommands()
             CommandGroup(after: .newItem) {
                 Button("Yeni Liste") { store.addList() }
                     .keyboardShortcut("l", modifiers: [.command, .shift])

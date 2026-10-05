@@ -188,6 +188,14 @@ final class Store {
             $0.isCompleted.toggle()
             $0.completedAt = $0.isCompleted ? Date() : nil
         }
+        if task(id)?.isCompleted == true { playCompletionSound() }
+    }
+
+    /// Görev tamamlanınca kısa bir "ding" çalar; art arda tıklamada baştan başlar.
+    private func playCompletionSound() {
+        guard let sound = NSSound(named: "Glass") else { return }
+        sound.stop()
+        sound.play()
     }
 
     func toggleImportant(_ id: UUID) {
@@ -212,6 +220,16 @@ final class Store {
             $0.myDayDate = $0.myDayDate ?? Date()
             $0.myDayTab = tab
         }
+    }
+
+    /// Görevi hedef görevin yerine taşır. Sıra tüm görünümlerin ortak kullandığı
+    /// `data.tasks` dizisinden geldiği için filtreli listelerde de doğru çalışır.
+    func moveTask(_ id: UUID, to targetID: UUID) {
+        guard id != targetID,
+              let from = data.tasks.firstIndex(where: { $0.id == id }),
+              let to = data.tasks.firstIndex(where: { $0.id == targetID })
+        else { return }
+        data.tasks.move(fromOffsets: [from], toOffset: to > from ? to + 1 : to)
     }
 
     func deleteTask(_ id: UUID) {

@@ -9,7 +9,10 @@ struct TaskStep: Identifiable, Codable, Hashable {
 struct TodoItem: Identifiable, Codable, Hashable {
     var id = UUID()
     var title: String
+    /// Açıklamanın düz metin hâli (satırdaki not simgesi ve eski kayıtlar için).
     var notes = ""
+    /// Açıklamanın biçimlendirilmiş hâli (RTF).
+    var notesRTF: Data?
     var isCompleted = false
     var isImportant = false
     var dueDate: Date?
@@ -59,6 +62,11 @@ enum ListSelection: Hashable {
         case .planned: "planned"
         case .list(let id): "list-\(id.uuidString)"
         }
+    }
+
+    /// Günüm seçiliyken aktif sekmeye göre Günüm ya da Nice to have.
+    func resolved(_ tab: MyDayTab) -> ListSelection {
+        self == .myDay && tab == .niceToHave ? .niceToHave : self
     }
 
     var isSmart: Bool {

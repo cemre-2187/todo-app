@@ -7,7 +7,9 @@ Microsoft To Do benzeri, arka planı değiştirilebilen native macOS (SwiftUI) y
 - **Akıllı listeler:** Günüm, Önemli, Planlanan, Görevler
 - **Günüm iki sekmeli:** *Günüm* ve *Nice to have* (adını başlığa tıklayıp değiştirebilirsin). Görevler sen kaldırana kadar Günüm'de kalır; sağ tık ya da detay panelinden sekmeler arasında taşınır.
 - **Kendi listelerin:** oluştur, başlığa tıklayıp yeniden adlandır, sürükleyerek sırala, sağ tıkla sil
-- **Görevler:** tamamla, yıldızla, Günüm'e ekle, son tarih, alt adımlar, notlar, başka listeye taşı
+- **Görevler:** tamamla (🔔 tamamlanma sesiyle), yıldızla, Günüm'e ekle, başka listeye taşı
+- **Sıralama:** görevleri sürükle bırak ile yeniden sırala (Planlanan hariç; son tarihe göre sıralıdır)
+- **Açıklama:** göreve tıklayınca sağda açılan panelde biçimli metin editörü — başlık/alt başlık, kalın, italik, altı/üstü çizili, madde işaretli ve numaralı liste (`⌘B`, `⌘I`, `⌘U` de çalışır)
 - **Arka plan:** her liste için ayrı; 10 hazır tema veya kendi resmin
   - Araç çubuğundaki 🎨 düğmesi → tema seç ya da "Resim seç…"
   - Ya da bir resmi doğrudan pencereye sürükleyip bırak
